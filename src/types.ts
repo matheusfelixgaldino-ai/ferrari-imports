@@ -1,15 +1,24 @@
-export type Category = 'camisetas' | 'moletons' | 'calcas' | 'jaquetas' | 'acessorios';
-
 export interface Product {
   id: number;
   name: string;
-  category: Category;
+  category: string;
   price: number;
   oldPrice?: number;
   image: string;
   sizes: string[];
   badge?: 'novo' | 'oferta' | 'bestseller';
   description: string;
+  stock?: number;
+  published?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CategoryDef {
+  id: number;
+  slug: string;
+  label: string;
+  sort_order: number;
 }
 
 export interface CartItem {
@@ -21,10 +30,13 @@ export interface CartItem {
   quantity: number;
 }
 
-export const CATEGORY_LABELS: Record<Category, string> = {
+export const CATEGORY_LABELS: Record<string, string> = {
   camisetas: 'Camisetas',
   moletons: 'Moletons',
   calcas: 'Calças',
   jaquetas: 'Jaquetas',
   acessorios: 'Acessórios',
+  conjuntos: 'Conjuntos',
+  bermudas: 'Bermudas',
+  ofertas: 'Ofertas',
 };

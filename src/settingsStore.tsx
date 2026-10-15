@@ -11,6 +11,24 @@ interface SettingsContextValue {
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
 
+function deepMerge<T>(base: T, override: Partial<T>): T {
+  const result = { ...base };
+  for (const key in override) {
+    if (
+      override[key] &&
+      typeof override[key] === 'object' &&
+      !Array.isArray(override[key]) &&
+      base[key] &&
+      typeof base[key] === 'object'
+    ) {
+      result[key] = deepMerge(base[key], override[key] as Partial<typeof base[key]>);
+    } else if (override[key] !== undefined) {
+      result[key] = override[key];
+    }
+  }
+  return result;
+}
+
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<StoreSettings>(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
@@ -26,19 +44,19 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
 
       if (data?.settings && typeof data.settings === 'object') {
-        const merged = { ...DEFAULT_SETTINGS, ...data.settings };
+        const merged = deepMerge(DEFAULT_SETTINGS, data.settings as Partial<StoreSettings>);
         setSettings(merged);
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(merged));
       } else {
         const cached = localStorage.getItem(SETTINGS_KEY);
         if (cached) {
-          setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(cached) });
+          setSettings(deepMerge(DEFAULT_SETTINGS, JSON.parse(cached)));
         }
       }
     } catch {
       const cached = localStorage.getItem(SETTINGS_KEY);
       if (cached) {
-        setSettings({ ...DEFAULT_SETTINGS, ...JSON.parse(cached) });
+        setSettings(deepMerge(DEFAULT_SETTINGS, JSON.parse(cached)));
       }
     } finally {
       setLoading(false);
